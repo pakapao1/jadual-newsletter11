@@ -6,16 +6,29 @@
   <style>
     body { font-family: Arial, sans-serif; background: #fdf5e6; padding: 20px; }
     .calendar { width: 950px; margin: auto; background: white; border: 4px solid #8b4513; padding: 20px; box-shadow: 5px 5px 15px rgba(0,0,0,0.3); }
-    .header { text-align: center; color: #8b4513; font-size: 28px; font-weight: bold; margin-bottom: 15px; }
+    .header { text-align: center; color: #8b4513; font-size: 28px; font-weight: bold; margin-bottom: 6px; }
+    .clock { text-align: center; color: #5f2f0c; font-size: 13px; margin-bottom: 15px; }
     .control-box { background: #fff8dc; border: 2px dashed #8b4513; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
     textarea { width: 100%; height: 180px; margin-top: 10px; padding: 10px; font-family: Consolas, monospace; font-size: 13px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
     button { background: #8b4513; color: white; border: none; padding: 8px 14px; cursor: pointer; margin-top: 8px; margin-right: 5px; border-radius: 4px; }
     button:hover { background: #5f2f0c; }
     .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; border: 1px solid #ccc; }
     .day-header { font-weight: bold; text-align: center; background: #eee; padding: 8px; border: 1px solid #ddd; }
-    .day { min-height: 120px; border: 1px solid #ddd; padding: 6px; font-size: 12px; background: #fff; box-sizing: border-box; transition: background 0.3s; }
+    .day { min-height: 120px; border: 1px solid #ddd; padding: 6px; font-size: 12px; background: #fff; box-sizing: border-box; }
+    .other-month { background: #fafafa; color: #999; }
+    .past-day { background: #e8f5e9; }
+    .holiday-day { background: #fff9c4; border-color: #fbc02d; }
+    .other-month.past-day { background: #dff0e2; }
+    .other-month.holiday-day { background: #fff3b0; }
+    .today { outline: 3px solid #8b4513; }
     .date-num { font-size: 18px; font-weight: bold; color: #333; }
-    .holiday { color: red; font-weight: bold; font-size: 10px; display: block; margin-top: 2px; }
+    .today-label { color: #8b4513; font-weight: bold; font-size: 10px; display: block; margin-top: 2px; }
+    .holiday { color: #9a1b00; font-weight: bold; font-size: 10px; display: block; margin-top: 2px; }
+    .legend { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 10px 0 0; font-size: 12px; color: #5f2f0c; }
+    .legend-item { display: inline-flex; align-items: center; gap: 5px; }
+    .legend-color { width: 16px; height: 16px; border: 1px solid #999; display: inline-block; border-radius: 3px; }
+    .legend-past { background: #e8f5e9; }
+    .legend-holiday { background: #fff9c4; border-color: #fbc02d; }
     .task { background: #e1f5fe; border-left: 4px solid #03a9f4; padding: 5px; font-size: 11px; margin-top: 6px; line-height: 1.45; border-radius: 4px; }
     .message { display: none; background: #e8f5e9; border: 1px solid #4caf50; color: #256029; padding: 10px; margin-top: 10px; border-radius: 5px; font-weight: bold; }
   </style>
@@ -23,9 +36,24 @@
 <body>
 
 <div class="calendar">
-  <div class="header">JUN 2026 - NEWSLETTER SCHEDULE</div>
+  <div class="header" id="calendarHeader">NEWSLETTER SCHEDULE</div>
+  <div class="clock" id="clock"></div>
+  <div class="legend">
+    <span class="legend-item"><span class="legend-color legend-past"></span> Hari sudah lepas</span>
+    <span class="legend-item"><span class="legend-color legend-holiday"></span> Cuti umum Malaysia 2026</span>
+  </div>
+
   <div class="control-box">
-    <textarea id="scheduleText"></textarea>
+    <button onclick="goToPreviousMonth()">Bulan Sebelum</button>
+    <button onclick="goToCurrentMonth()">Sync Bulan Semasa</button>
+    <button onclick="goToNextMonth()">Bulan Seterusnya</button>
+    <br>
+    <textarea id="scheduleText" placeholder="Contoh:
+Week 24 (11 Jun 2026)
+HTML: Nama staff
+PDF: Nama staff
+JE Task: Nama staff
+Pic: Nama staff"></textarea>
     <br>
     <button onclick="updateCalendar()">Update Calendar</button>
     <button onclick="saveToServer()">Save ke Server</button>
@@ -33,71 +61,166 @@
     <div id="message" class="message"></div>
   </div>
 
-  <div class="grid">
-    <div class="day-header">Ahad</div><div class="day-header">Isnin</div><div class="day-header">Selasa</div><div class="day-header">Rabu</div><div class="day-header">Khamis</div><div class="day-header">Jumaat</div><div class="day-header">Sabtu</div>
-    <div class="day"></div><div class="day"><span class="date-num">1</span></div><div class="day"><span class="date-num">2</span></div><div class="day"><span class="date-num">3</span></div><div class="day"><span class="date-num">4</span></div><div class="day"><span class="date-num">5</span></div><div class="day"><span class="date-num">6</span></div>
-    <div class="day"><span class="date-num">7</span></div><div class="day"><span class="date-num">8</span></div><div class="day"><span class="date-num">9</span></div><div class="day"><span class="date-num">10</span></div><div class="day"><span class="date-num">11</span><div id="week24"></div></div><div class="day"><span class="date-num">12</span></div><div class="day"><span class="date-num">13</span></div>
-    <div class="day"><span class="date-num">14</span></div><div class="day"><span class="date-num">15</span></div><div class="day"><span class="date-num">16</span></div><div class="day"><span class="date-num">17</span><span class="holiday">Awal Muharram</span></div><div class="day"><span class="date-num">18</span><div id="week25"></div></div><div class="day"><span class="date-num">19</span></div><div class="day"><span class="date-num">20</span></div>
-    <div class="day"><span class="date-num">21</span></div><div class="day"><span class="date-num">22</span></div><div class="day"><span class="date-num">23</span></div><div class="day"><span class="date-num">24</span></div><div class="day"><span class="date-num">25</span><div id="week26"></div></div><div class="day"><span class="date-num">26</span></div><div class="day"><span class="date-num">27</span></div>
-    <div class="day"><span class="date-num">28</span></div><div class="day"><span class="date-num">29</span></div><div class="day"><span class="date-num">30</span></div><div class="day">1 Julai</div><div class="day">2 Julai<div id="week27"></div></div><div class="day">3 Julai</div><div class="day">4 Julai</div>
-    <div class="day">5 Julai</div><div class="day">6 Julai</div><div class="day">7 Julai</div><div class="day">8 Julai</div><div class="day">9 Julai<div id="week28"></div></div><div class="day">10 Julai</div><div class="day">11 Julai</div>
-  </div>
+  <div class="grid" id="calendarGrid"></div>
 </div>
 
 <script>
   const textarea = document.getElementById("scheduleText");
+  const calendarGrid = document.getElementById("calendarGrid");
+  const calendarHeader = document.getElementById("calendarHeader");
+  const clock = document.getElementById("clock");
 
-  window.onload = function() {
-    fetch('/get_schedule')
-      .then(r => r.text())
-      .then(data => { textarea.value = data; updateCalendar(); });
+  const monthNames = [
+    "Januari", "Februari", "Mac", "April", "Mei", "Jun",
+    "Julai", "Ogos", "September", "Oktober", "November", "Disember"
+  ];
+  const dayNames = ["Ahad", "Isnin", "Selasa", "Rabu", "Khamis", "Jumaat", "Sabtu"];
+
+  // Cuti umum Malaysia 2026. Termasuk cuti persekutuan dan cuti negeri yang tersenarai untuk Malaysia.
+  // Format: "YYYY-MM-DD": ["Nama Cuti"]
+  const holidays = {
+    "2026-01-01": ["New Year's Day"],
+    "2026-01-14": ["YDPB Negeri Sembilan's Birthday"],
+    "2026-01-17": ["Israk and Mikraj"],
+    "2026-02-01": ["Thaipusam", "Federal Territory Day"],
+    "2026-02-02": ["Thaipusam Holiday", "Federal Territory Day Holiday"],
+    "2026-02-03": ["Federal Territory Day Holiday"],
+    "2026-02-17": ["Chinese New Year"],
+    "2026-02-18": ["Chinese New Year Day 2"],
+    "2026-02-19": ["Awal Ramadan"],
+    "2026-02-20": ["Independence Declaration Day"],
+    "2026-03-04": ["Installation of Sultan Terengganu"],
+    "2026-03-07": ["Nuzul Al-Quran"],
+    "2026-03-21": ["Hari Raya Aidilfitri"],
+    "2026-03-22": ["Hari Raya Aidilfitri Day 2"],
+    "2026-03-23": ["Hari Raya Aidilfitri Holiday", "Sultan of Johor's Birthday"],
+    "2026-03-24": ["Hari Raya Aidilfitri Holiday"],
+    "2026-03-30": ["Sabah Governor's Birthday"],
+    "2026-04-03": ["Good Friday"],
+    "2026-04-26": ["Sultan of Terengganu's Birthday"],
+    "2026-05-01": ["Labour Day"],
+    "2026-05-17": ["Raja Perlis' Birthday"],
+    "2026-05-18": ["Raja Perlis' Birthday Holiday"],
+    "2026-05-22": ["Hari Hol Pahang"],
+    "2026-05-26": ["Arafat Day"],
+    "2026-05-27": ["Hari Raya Haji"],
+    "2026-05-28": ["Hari Raya Haji Day 2"],
+    "2026-05-30": ["Harvest Festival"],
+    "2026-05-31": ["Harvest Festival Day 2", "Wesak Day"],
+    "2026-06-01": ["Wesak Day Holiday", "Hari Gawai", "Agong's Birthday", "Harvest Festival Holiday"],
+    "2026-06-02": ["Hari Gawai Holiday"],
+    "2026-06-17": ["Awal Muharram"],
+    "2026-06-21": ["Sultan of Kedah's Birthday"],
+    "2026-07-07": ["Georgetown World Heritage City Day"],
+    "2026-07-11": ["Penang Governor's Birthday"],
+    "2026-07-21": ["Hari Hol Almarhum Sultan Iskandar"],
+    "2026-07-22": ["Sarawak Day"],
+    "2026-07-30": ["Sultan of Pahang's Birthday"],
+    "2026-08-24": ["Melaka Governor's Birthday"],
+    "2026-08-25": ["Prophet Muhammad's Birthday"],
+    "2026-08-31": ["Merdeka Day"],
+    "2026-09-16": ["Malaysia Day"],
+    "2026-09-29": ["Sultan of Kelantan's Birthday"],
+    "2026-09-30": ["Sultan of Kelantan's Birthday Day 2"],
+    "2026-10-10": ["Sarawak Governor's Birthday"],
+    "2026-11-06": ["Sultan of Perak's Birthday"],
+    "2026-11-08": ["Deepavali"],
+    "2026-11-09": ["Deepavali Holiday"],
+    "2026-12-11": ["Sultan of Selangor's Birthday"],
+    "2026-12-24": ["Christmas Eve"],
+    "2026-12-25": ["Christmas Day"]
   };
 
-  function updateCalendar() {
-    const schedules = parseSchedule(textarea.value);
-    for (let i = 24; i <= 28; i++) {
-      const target = document.getElementById("week" + i);
-      if (target && schedules[i]) {
-        target.innerHTML = `<div class="task"><strong>Week ${i}</strong><br>HTML: ${schedules[i].html}<br>PDF: ${schedules[i].pdf}<br>JE: ${schedules[i].je}<br>Pic: ${schedules[i].pic}</div>`;
-      }
-    }
-    highlightDays();
-  }
+  let viewedDate = new Date();
 
-  function highlightDays() {
-    const today = new Date();
-    const currentDay = today.getDate();
-    document.querySelectorAll('.day').forEach(dayEl => {
-      const span = dayEl.querySelector('.date-num');
-      if (span) {
-        const num = parseInt(span.innerText);
-        if (num < currentDay) dayEl.style.backgroundColor = "#d4edda";
-        if (num === currentDay) dayEl.style.border = "3px solid #28a745";
-      }
-    });
+  window.onload = function() {
+    loadSchedule();
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Auto re-render bila text schedule berubah
+    textarea.addEventListener("input", updateCalendar);
+  };
+
+  function loadSchedule() {
+    fetch('/get_schedule')
+      .then(r => {
+        if (!r.ok) throw new Error("Server tidak tersedia");
+        return r.text();
+      })
+      .then(data => {
+        textarea.value = data;
+        updateCalendar();
+      })
+      .catch(() => {
+        textarea.value = localStorage.getItem("newsletterSchedule") || "";
+        updateCalendar();
+      });
   }
 
   function saveToServer() {
+    localStorage.setItem("newsletterSchedule", textarea.value);
+
     fetch('/save_schedule', { method: 'POST', body: textarea.value })
-      .then(() => showMessage("Data berjaya disimpan di server!"));
+      .then(r => {
+        if (!r.ok) throw new Error("Server tidak tersedia");
+        showMessage("Data berjaya disimpan di server dan browser!");
+      })
+      .catch(() => {
+        showMessage("Server tidak tersedia. Data disimpan sementara di browser sahaja.");
+      });
   }
 
   function downloadTxt() {
     const blob = new Blob([textarea.value], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = "schedule.txt"; a.click();
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "schedule.txt";
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   function showMessage(text) {
     const msg = document.getElementById("message");
-    msg.innerText = text; msg.style.display = "block";
+    msg.innerText = text;
+    msg.style.display = "block";
     setTimeout(() => msg.style.display = "none", 3000);
+  }
+
+  function updateClock() {
+    const now = new Date();
+    clock.innerText = "Sync masa semasa: " + now.toLocaleString("ms-MY", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+  }
+
+  function goToPreviousMonth() {
+    viewedDate = new Date(viewedDate.getFullYear(), viewedDate.getMonth() - 1, 1);
+    updateCalendar();
+  }
+
+  function goToCurrentMonth() {
+    viewedDate = new Date();
+    updateCalendar();
+  }
+
+  function goToNextMonth() {
+    viewedDate = new Date(viewedDate.getFullYear(), viewedDate.getMonth() + 1, 1);
+    updateCalendar();
   }
 
   function parseSchedule(text) {
     const weeks = {};
     const regex = /week\s+(\d+)\s*\((.*?)\)(.*?)(?=week\s+\d+\s*\(|$)/gis;
     let match;
+
     while ((match = regex.exec(text)) !== null) {
       weeks[match[1].trim()] = {
         html: getValue(match[3], "HTML"),
@@ -106,6 +229,7 @@
         pic: getValue(match[3], "Pic")
       };
     }
+
     return weeks;
   }
 
@@ -113,6 +237,96 @@
     const regex = new RegExp(label.replace(" ", "\\s*") + "\\s*:\\s*(.*)", "i");
     const match = text.match(regex);
     return match && match[1].trim() !== "" ? match[1].trim() : "-";
+  }
+
+  function updateCalendar() {
+    const schedules = parseSchedule(textarea.value);
+    const year = viewedDate.getFullYear();
+    const month = viewedDate.getMonth();
+
+    calendarHeader.innerText = monthNames[month].toUpperCase() + " " + year + " - NEWSLETTER SCHEDULE";
+    calendarGrid.innerHTML = "";
+
+    dayNames.forEach(day => {
+      const header = document.createElement("div");
+      header.className = "day-header";
+      header.innerText = day;
+      calendarGrid.appendChild(header);
+    });
+
+    const firstDay = new Date(year, month, 1);
+    const startOffset = firstDay.getDay(); // 0 = Ahad
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayKey = formatDateKey(today);
+
+    // 42 petak = 6 minggu, supaya newsletter week yang overlap bulan depan masih nampak
+    for (let i = 0; i < 42; i++) {
+      const date = new Date(year, month, 1 - startOffset + i);
+      const dateKey = formatDateKey(date);
+      const weekNo = getISOWeek(date);
+
+      const dayBox = document.createElement("div");
+      dayBox.className = "day";
+
+      if (date.getMonth() !== month) dayBox.classList.add("other-month");
+      if (date < today) dayBox.classList.add("past-day");
+      if (holidays[dateKey]) dayBox.classList.add("holiday-day");
+      if (dateKey === todayKey) dayBox.classList.add("today");
+
+      let html = `<span class="date-num">${date.getDate()}</span>`;
+
+      if (dateKey === todayKey) {
+        html += `<span class="today-label">Hari ini</span>`;
+      }
+
+      if (holidays[dateKey]) {
+        html += holidays[dateKey]
+          .map(name => `<span class="holiday">${escapeHTML(name)}</span>`)
+          .join("");
+      }
+
+      // Schedule ditunjukkan pada hari Khamis mengikut ISO week number.
+      // Contoh: Week 24 akan masuk pada Khamis minggu ISO ke-24.
+      if (date.getDay() === 4 && schedules[weekNo]) {
+        html += `
+          <div class="task">
+            <strong>Week ${weekNo}</strong><br>
+            HTML: ${escapeHTML(schedules[weekNo].html)}<br>
+            PDF: ${escapeHTML(schedules[weekNo].pdf)}<br>
+            JE: ${escapeHTML(schedules[weekNo].je)}<br>
+            Pic: ${escapeHTML(schedules[weekNo].pic)}
+          </div>
+        `;
+      }
+
+      dayBox.innerHTML = html;
+      calendarGrid.appendChild(dayBox);
+    }
+  }
+
+  function formatDateKey(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  function getISOWeek(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  }
+
+  function escapeHTML(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
 </script>
 </body>

@@ -8,111 +8,110 @@
     .calendar { width: 950px; margin: auto; background: white; border: 4px solid #8b4513; padding: 20px; box-shadow: 5px 5px 15px rgba(0,0,0,0.3); }
     .header { text-align: center; color: #8b4513; font-size: 28px; font-weight: bold; margin-bottom: 15px; }
     .control-box { background: #fff8dc; border: 2px dashed #8b4513; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
-    textarea { width: 100%; height: 180px; margin-top: 10px; padding: 10px; font-family: Consolas, monospace; font-size: 13px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
-    button { background: #8b4513; color: white; border: none; padding: 8px 14px; cursor: pointer; margin-top: 8px; margin-right: 5px; border-radius: 4px; }
-    button:hover { background: #5f2f0c; }
+    textarea { width: 100%; height: 180px; margin-top: 10px; padding: 10px; font-family: Consolas, monospace; font-size: 13px; border: 1px solid #ccc; }
+    button { background: #8b4513; color: white; border: none; padding: 8px 14px; cursor: pointer; margin-right: 5px; border-radius: 4px; }
     .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; border: 1px solid #ccc; }
-    .day-header { font-weight: bold; text-align: center; background: #eee; padding: 8px; border: 1px solid #ddd; }
-    .day { min-height: 120px; border: 1px solid #ddd; padding: 6px; font-size: 12px; background: #fff; box-sizing: border-box; transition: background 0.3s; }
-    .date-num { font-size: 18px; font-weight: bold; color: #333; }
-    .holiday { color: red; font-weight: bold; font-size: 10px; display: block; margin-top: 2px; }
-    .task { background: #e1f5fe; border-left: 4px solid #03a9f4; padding: 5px; font-size: 11px; margin-top: 6px; line-height: 1.45; border-radius: 4px; }
-    .message { display: none; background: #e8f5e9; border: 1px solid #4caf50; color: #256029; padding: 10px; margin-top: 10px; border-radius: 5px; font-weight: bold; }
+    .day-header { font-weight: bold; text-align: center; background: #eee; padding: 8px; }
+    .day { min-height: 100px; border: 1px solid #ddd; padding: 5px; background: #fff; position: relative; }
+    .date-num { font-size: 16px; font-weight: bold; }
+    .task { background: #e1f5fe; border-left: 3px solid #03a9f4; padding: 3px; font-size: 10px; margin-top: 3px; }
   </style>
 </head>
 <body>
 
 <div class="calendar">
-  <div class="header">JUN 2026 - NEWSLETTER SCHEDULE</div>
+  <div class="header" id="monthHeader"></div>
   <div class="control-box">
-    <textarea id="scheduleText"></textarea>
-    <br>
+    <textarea id="scheduleText" placeholder="Format: 
+week 24 (11-15 jun)
+HTML: -
+PDF: -
+JE Task: -
+Pic: -
+
+Cuti:
+17 Awal Muharram"></textarea><br>
     <button onclick="updateCalendar()">Update Calendar</button>
     <button onclick="saveToServer()">Save ke Server</button>
     <button onclick="downloadTxt()">Download TXT</button>
-    <div id="message" class="message"></div>
   </div>
-
-  <div class="grid">
-    <div class="day-header">Ahad</div><div class="day-header">Isnin</div><div class="day-header">Selasa</div><div class="day-header">Rabu</div><div class="day-header">Khamis</div><div class="day-header">Jumaat</div><div class="day-header">Sabtu</div>
-    <div class="day"></div><div class="day"><span class="date-num">1</span></div><div class="day"><span class="date-num">2</span></div><div class="day"><span class="date-num">3</span></div><div class="day"><span class="date-num">4</span></div><div class="day"><span class="date-num">5</span></div><div class="day"><span class="date-num">6</span></div>
-    <div class="day"><span class="date-num">7</span></div><div class="day"><span class="date-num">8</span></div><div class="day"><span class="date-num">9</span></div><div class="day"><span class="date-num">10</span></div><div class="day"><span class="date-num">11</span><div id="week24"></div></div><div class="day"><span class="date-num">12</span></div><div class="day"><span class="date-num">13</span></div>
-    <div class="day"><span class="date-num">14</span></div><div class="day"><span class="date-num">15</span></div><div class="day"><span class="date-num">16</span></div><div class="day"><span class="date-num">17</span><span class="holiday">Awal Muharram</span></div><div class="day"><span class="date-num">18</span><div id="week25"></div></div><div class="day"><span class="date-num">19</span></div><div class="day"><span class="date-num">20</span></div>
-    <div class="day"><span class="date-num">21</span></div><div class="day"><span class="date-num">22</span></div><div class="day"><span class="date-num">23</span></div><div class="day"><span class="date-num">24</span></div><div class="day"><span class="date-num">25</span><div id="week26"></div></div><div class="day"><span class="date-num">26</span></div><div class="day"><span class="date-num">27</span></div>
-    <div class="day"><span class="date-num">28</span></div><div class="day"><span class="date-num">29</span></div><div class="day"><span class="date-num">30</span></div><div class="day">1 Julai</div><div class="day">2 Julai<div id="week27"></div></div><div class="day">3 Julai</div><div class="day">4 Julai</div>
-    <div class="day">5 Julai</div><div class="day">6 Julai</div><div class="day">7 Julai</div><div class="day">8 Julai</div><div class="day">9 Julai<div id="week28"></div></div><div class="day">10 Julai</div><div class="day">11 Julai</div>
-  </div>
+  <div class="grid" id="calendarGrid"></div>
 </div>
 
 <script>
   const textarea = document.getElementById("scheduleText");
+  const grid = document.getElementById("calendarGrid");
 
-  window.onload = function() {
-    fetch('/get_schedule')
-      .then(r => r.text())
-      .then(data => { textarea.value = data; updateCalendar(); });
+  window.onload = async () => {
+    const res = await fetch('/get_schedule');
+    textarea.value = await res.text();
+    renderCalendar();
   };
 
-  function updateCalendar() {
-    const schedules = parseSchedule(textarea.value);
-    for (let i = 24; i <= 28; i++) {
-      const target = document.getElementById("week" + i);
-      if (target && schedules[i]) {
-        target.innerHTML = `<div class="task"><strong>Week ${i}</strong><br>HTML: ${schedules[i].html}<br>PDF: ${schedules[i].pdf}<br>JE: ${schedules[i].je}<br>Pic: ${schedules[i].pic}</div>`;
-      }
+  function renderCalendar() {
+    grid.innerHTML = '<div class="day-header">Ahd</div><div class="day-header">Isn</div><div class="day-header">Sel</div><div class="day-header">Rab</div><div class="day-header">Kha</div><div class="day-header">Jum</div><div class="day-header">Sab</div>';
+    
+    const now = new Date();
+    document.getElementById("monthHeader").innerText = now.toLocaleString('ms-MY', { month: 'long', year: 'numeric' }).toUpperCase() + " - NEWSLETTER";
+
+    for (let i = 1; i <= 31; i++) {
+      grid.innerHTML += `<div class="day" id="day-${i}"><span class="date-num">${i}</span><div id="task-${i}"></div></div>`;
     }
-    highlightDays();
+    updateCalendar();
   }
 
-  function highlightDays() {
-    const today = new Date();
-    const currentDay = today.getDate();
-    document.querySelectorAll('.day').forEach(dayEl => {
-      const span = dayEl.querySelector('.date-num');
-      if (span) {
-        const num = parseInt(span.innerText);
-        if (num < currentDay) dayEl.style.backgroundColor = "#d4edda";
-        if (num === currentDay) dayEl.style.border = "3px solid #28a745";
+  function updateCalendar() {
+    // Clear task lama
+    document.querySelectorAll('.task, .holiday, .blast').forEach(el => el.remove());
+    
+    const text = textarea.value;
+    const lines = text.split('\n');
+    const today = new Date().getDate();
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth();
+
+    // Mapping Week Manual
+    const weekMap = { 24: 11, 25: 18, 26: 25, 27: 2, 28: 9 };
+    for (let w in weekMap) {
+      if (text.includes("week " + w)) {
+        document.getElementById(`task-${weekMap[w]}`).innerHTML = `<div class="task">Week ${w}</div>`;
+      }
+    }
+
+    // Process Cuti & Highlight
+    lines.forEach(line => {
+      const match = line.match(/(\d+)\s+(.*)/);
+      if (match) {
+        const d = parseInt(match[1]);
+        if (d > 0 && d <= 31) {
+          document.getElementById(`task-${d}`).innerHTML += `<div class="holiday" style="color:red; font-size:10px;">${match[2]}</div>`;
+        }
+      }
+    });
+
+    document.querySelectorAll('.day').forEach(el => {
+      const num = parseInt(el.innerText);
+      if (isNaN(num)) return;
+      if (num < today) el.style.backgroundColor = "#d4edda";
+      if (num === today) el.style.border = "3px solid #28a745";
+      
+      // Auto Jumaat Blast
+      const dObj = new Date(currentYear, currentMonth, num);
+      if (dObj.getDay() === 5) {
+        el.innerHTML += `<div class="blast" style="font-size:9px; color:#d32f2f;">🚀 Blast</div>`;
       }
     });
   }
 
   function saveToServer() {
-    fetch('/save_schedule', { method: 'POST', body: textarea.value })
-      .then(() => showMessage("Data berjaya disimpan di server!"));
+    fetch('/save_schedule', { method: 'POST', body: textarea.value });
+    alert("Berjaya Disimpan!");
   }
 
   function downloadTxt() {
-    const blob = new Blob([textarea.value], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = "schedule.txt"; a.click();
-  }
-
-  function showMessage(text) {
-    const msg = document.getElementById("message");
-    msg.innerText = text; msg.style.display = "block";
-    setTimeout(() => msg.style.display = "none", 3000);
-  }
-
-  function parseSchedule(text) {
-    const weeks = {};
-    const regex = /week\s+(\d+)\s*\((.*?)\)(.*?)(?=week\s+\d+\s*\(|$)/gis;
-    let match;
-    while ((match = regex.exec(text)) !== null) {
-      weeks[match[1].trim()] = {
-        html: getValue(match[3], "HTML"),
-        pdf: getValue(match[3], "PDF"),
-        je: getValue(match[3], "JE Task"),
-        pic: getValue(match[3], "Pic")
-      };
-    }
-    return weeks;
-  }
-
-  function getValue(text, label) {
-    const regex = new RegExp(label.replace(" ", "\\s*") + "\\s*:\\s*(.*)", "i");
-    const match = text.match(regex);
-    return match && match[1].trim() !== "" ? match[1].trim() : "-";
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([textarea.value], {type: "text/plain"}));
+    a.download = "schedule.txt"; a.click();
   }
 </script>
 </body>

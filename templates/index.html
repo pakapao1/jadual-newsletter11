@@ -2,19 +2,19 @@
 <html lang="ms">
 <head>
   <meta charset="UTF-8">
-  <title>Kalendar Kuda Newsletter</title>
+  <title>Kalendar Newsletter</title>
   <style>
     body { font-family: Arial, sans-serif; background: #fdf5e6; padding: 20px; }
     .calendar { width: 950px; margin: auto; background: white; border: 4px solid #8b4513; padding: 20px; box-shadow: 5px 5px 15px rgba(0,0,0,0.3); }
     .header { text-align: center; color: #8b4513; font-size: 28px; font-weight: bold; margin-bottom: 15px; }
-    .control-box { background: #fff8dc; border: 2px dashed #8b4513; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
-    textarea { width: 100%; height: 180px; margin-top: 10px; padding: 10px; font-family: Consolas, monospace; font-size: 13px; border: 1px solid #ccc; }
-    button { background: #8b4513; color: white; border: none; padding: 8px 14px; cursor: pointer; margin-right: 5px; border-radius: 4px; }
+    .control-box { background: #fff8dc; border: 2px dashed #8b4513; padding: 15px; margin-bottom: 20px; }
+    textarea { width: 100%; height: 120px; }
     .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; border: 1px solid #ccc; }
     .day-header { font-weight: bold; text-align: center; background: #eee; padding: 8px; }
     .day { min-height: 100px; border: 1px solid #ddd; padding: 5px; background: #fff; position: relative; }
     .date-num { font-size: 16px; font-weight: bold; }
     .task { background: #e1f5fe; border-left: 3px solid #03a9f4; padding: 3px; font-size: 10px; margin-top: 3px; }
+    .holiday { color: red; font-weight: bold; font-size: 10px; }
   </style>
 </head>
 <body>
@@ -22,97 +22,69 @@
 <div class="calendar">
   <div class="header" id="monthHeader"></div>
   <div class="control-box">
-    <textarea id="scheduleText" placeholder="Format: 
-week 24 (11-15 jun)
-HTML: -
-PDF: -
-JE Task: -
-Pic: -
-
-Cuti:
-17 Awal Muharram"></textarea><br>
-    <button onclick="updateCalendar()">Update Calendar</button>
-    <button onclick="saveToServer()">Save ke Server</button>
-    <button onclick="downloadTxt()">Download TXT</button>
+    <textarea id="scheduleText"></textarea><br>
+    <button onclick="saveAndRefresh()">Simpan & Refresh</button>
   </div>
   <div class="grid" id="calendarGrid"></div>
 </div>
 
 <script>
-  const textarea = document.getElementById("scheduleText");
   const grid = document.getElementById("calendarGrid");
+  const header = document.getElementById("monthHeader");
+  const textarea = document.getElementById("scheduleText");
 
-  window.onload = async () => {
-    const res = await fetch('/get_schedule');
-    textarea.value = await res.text();
-    renderCalendar();
-  };
+  async function loadData() {
+    try {
+      const res = await fetch('/get_schedule');
+      textarea.value = await res.text();
+      renderCalendar();
+    } catch (e) { console.error("Gagal ambil data:", e); }
+  }
 
   function renderCalendar() {
     grid.innerHTML = '<div class="day-header">Ahd</div><div class="day-header">Isn</div><div class="day-header">Sel</div><div class="day-header">Rab</div><div class="day-header">Kha</div><div class="day-header">Jum</div><div class="day-header">Sab</div>';
     
     const now = new Date();
-    document.getElementById("monthHeader").innerText = now.toLocaleString('ms-MY', { month: 'long', year: 'numeric' }).toUpperCase() + " - NEWSLETTER";
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    header.innerText = now.toLocaleString('ms-MY', { month: 'long', year: 'numeric' }).toUpperCase() + " - NEWSLETTER";
 
-    for (let i = 1; i <= 31; i++) {
+    for (let i = 1; i <= daysInMonth; i++) {
       grid.innerHTML += `<div class="day" id="day-${i}"><span class="date-num">${i}</span><div id="task-${i}"></div></div>`;
     }
-    updateCalendar();
+    applyLogic();
   }
 
-  function updateCalendar() {
-    // Clear task lama
-    document.querySelectorAll('.task, .holiday, .blast').forEach(el => el.remove());
-    
-    const text = textarea.value;
-    const lines = text.split('\n');
+  function applyLogic() {
     const today = new Date().getDate();
-    const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth();
-
-    // Mapping Week Manual
-    const weekMap = { 24: 11, 25: 18, 26: 25, 27: 2, 28: 9 };
-    for (let w in weekMap) {
-      if (text.includes("week " + w)) {
-        document.getElementById(`task-${weekMap[w]}`).innerHTML = `<div class="task">Week ${w}</div>`;
-      }
-    }
-
-    // Process Cuti & Highlight
-    lines.forEach(line => {
-      const match = line.match(/(\d+)\s+(.*)/);
-      if (match) {
-        const d = parseInt(match[1]);
-        if (d > 0 && d <= 31) {
-          document.getElementById(`task-${d}`).innerHTML += `<div class="holiday" style="color:red; font-size:10px;">${match[2]}</div>`;
-        }
-      }
-    });
+    const lines = textarea.value.split('\n');
 
     document.querySelectorAll('.day').forEach(el => {
-      const num = parseInt(el.innerText);
-      if (isNaN(num)) return;
+      const num = parseInt(el.querySelector('.date-num').innerText);
+      
+      // Highlight Hari
       if (num < today) el.style.backgroundColor = "#d4edda";
       if (num === today) el.style.border = "3px solid #28a745";
-      
-      // Auto Jumaat Blast
-      const dObj = new Date(currentYear, currentMonth, num);
-      if (dObj.getDay() === 5) {
-        el.innerHTML += `<div class="blast" style="font-size:9px; color:#d32f2f;">🚀 Blast</div>`;
-      }
+
+      // Jumaat Blast
+      const dObj = new Date(new Date().getFullYear(), new Date().getMonth(), num);
+      if (dObj.getDay() === 5) el.innerHTML += `<div style="color:#d32f2f; font-size:9px;">🚀 Blast</div>`;
+
+      // Cuti & Data (Parse dari text)
+      lines.forEach(line => {
+        if (line.startsWith(num + " ")) {
+          el.style.backgroundColor = "#fff3cd"; // Kuning
+          el.innerHTML += `<div class="holiday">${line.split(" ")[1]}</div>`;
+        }
+      });
     });
   }
 
-  function saveToServer() {
-    fetch('/save_schedule', { method: 'POST', body: textarea.value });
-    alert("Berjaya Disimpan!");
+  function saveAndRefresh() {
+    fetch('/save_schedule', { method: 'POST', body: textarea.value })
+      .then(() => location.reload());
   }
 
-  function downloadTxt() {
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([textarea.value], {type: "text/plain"}));
-    a.download = "schedule.txt"; a.click();
-  }
+  window.onload = loadData;
 </script>
 </body>
 </html>

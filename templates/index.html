@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Kalendar Kuda Newsletter</title>
   <style>
-    /* CSS asal anda kekal di sini */
     body { font-family: Arial, sans-serif; background: #fdf5e6; padding: 20px; }
     .calendar { width: 950px; margin: auto; background: white; border: 4px solid #8b4513; padding: 20px; box-shadow: 5px 5px 15px rgba(0,0,0,0.3); }
     .header { text-align: center; color: #8b4513; font-size: 28px; font-weight: bold; margin-bottom: 15px; }
@@ -14,7 +13,7 @@
     button:hover { background: #5f2f0c; }
     .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; border: 1px solid #ccc; }
     .day-header { font-weight: bold; text-align: center; background: #eee; padding: 8px; border: 1px solid #ddd; }
-    .day { min-height: 120px; border: 1px solid #ddd; padding: 6px; font-size: 12px; background: #fff; box-sizing: border-box; }
+    .day { min-height: 120px; border: 1px solid #ddd; padding: 6px; font-size: 12px; background: #fff; box-sizing: border-box; transition: background 0.3s; }
     .date-num { font-size: 18px; font-weight: bold; color: #333; }
     .holiday { color: red; font-weight: bold; font-size: 10px; display: block; margin-top: 2px; }
     .task { background: #e1f5fe; border-left: 4px solid #03a9f4; padding: 5px; font-size: 11px; margin-top: 6px; line-height: 1.45; border-radius: 4px; }
@@ -36,7 +35,6 @@
 
   <div class="grid">
     <div class="day-header">Ahad</div><div class="day-header">Isnin</div><div class="day-header">Selasa</div><div class="day-header">Rabu</div><div class="day-header">Khamis</div><div class="day-header">Jumaat</div><div class="day-header">Sabtu</div>
-    
     <div class="day"></div><div class="day"><span class="date-num">1</span></div><div class="day"><span class="date-num">2</span></div><div class="day"><span class="date-num">3</span></div><div class="day"><span class="date-num">4</span></div><div class="day"><span class="date-num">5</span></div><div class="day"><span class="date-num">6</span></div>
     <div class="day"><span class="date-num">7</span></div><div class="day"><span class="date-num">8</span></div><div class="day"><span class="date-num">9</span></div><div class="day"><span class="date-num">10</span></div><div class="day"><span class="date-num">11</span><div id="week24"></div></div><div class="day"><span class="date-num">12</span></div><div class="day"><span class="date-num">13</span></div>
     <div class="day"><span class="date-num">14</span></div><div class="day"><span class="date-num">15</span></div><div class="day"><span class="date-num">16</span></div><div class="day"><span class="date-num">17</span><span class="holiday">Awal Muharram</span></div><div class="day"><span class="date-num">18</span><div id="week25"></div></div><div class="day"><span class="date-num">19</span></div><div class="day"><span class="date-num">20</span></div>
@@ -49,12 +47,35 @@
 <script>
   const textarea = document.getElementById("scheduleText");
 
-  // Load data dari server/fail
   window.onload = function() {
     fetch('/get_schedule')
       .then(r => r.text())
       .then(data => { textarea.value = data; updateCalendar(); });
   };
+
+  function updateCalendar() {
+    const schedules = parseSchedule(textarea.value);
+    for (let i = 24; i <= 28; i++) {
+      const target = document.getElementById("week" + i);
+      if (target && schedules[i]) {
+        target.innerHTML = `<div class="task"><strong>Week ${i}</strong><br>HTML: ${schedules[i].html}<br>PDF: ${schedules[i].pdf}<br>JE: ${schedules[i].je}<br>Pic: ${schedules[i].pic}</div>`;
+      }
+    }
+    highlightDays();
+  }
+
+  function highlightDays() {
+    const today = new Date();
+    const currentDay = today.getDate();
+    document.querySelectorAll('.day').forEach(dayEl => {
+      const span = dayEl.querySelector('.date-num');
+      if (span) {
+        const num = parseInt(span.innerText);
+        if (num < currentDay) dayEl.style.backgroundColor = "#d4edda";
+        if (num === currentDay) dayEl.style.border = "3px solid #28a745";
+      }
+    });
+  }
 
   function saveToServer() {
     fetch('/save_schedule', { method: 'POST', body: textarea.value })
@@ -73,7 +94,6 @@
     setTimeout(() => msg.style.display = "none", 3000);
   }
 
-  // Fungsi Parser Asal Anda
   function parseSchedule(text) {
     const weeks = {};
     const regex = /week\s+(\d+)\s*\((.*?)\)(.*?)(?=week\s+\d+\s*\(|$)/gis;
@@ -93,16 +113,6 @@
     const regex = new RegExp(label.replace(" ", "\\s*") + "\\s*:\\s*(.*)", "i");
     const match = text.match(regex);
     return match && match[1].trim() !== "" ? match[1].trim() : "-";
-  }
-
-  function updateCalendar() {
-    const schedules = parseSchedule(textarea.value);
-    for (let i = 24; i <= 28; i++) {
-      const target = document.getElementById("week" + i);
-      if (target && schedules[i]) {
-        target.innerHTML = `<div class="task"><strong>Week ${i}</strong><br>HTML: ${schedules[i].html}<br>PDF: ${schedules[i].pdf}<br>JE: ${schedules[i].je}<br>Pic: ${schedules[i].pic}</div>`;
-      }
-    }
   }
 </script>
 </body>

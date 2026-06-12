@@ -2,51 +2,412 @@
 <html lang="ms">
 <head>
   <meta charset="UTF-8">
-  <title>Newsletter</title>
+  <title>Newsletter Dashboard</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #fdf5e6; padding: 20px; }
-    .calendar { width: 950px; margin: auto; background: white; border: 4px solid #8b4513; padding: 20px; box-shadow: 5px 5px 15px rgba(0,0,0,0.3); }
-    .header { text-align: center; color: #8b4513; font-size: 28px; font-weight: bold; margin-bottom: 6px; }
-    .clock { text-align: center; color: #5f2f0c; font-size: 13px; margin-bottom: 15px; }
-    .control-box { background: #fff8dc; border: 2px dashed #8b4513; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
-    textarea { width: 100%; height: 180px; margin-top: 10px; padding: 10px; font-family: Consolas, monospace; font-size: 13px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
-    button { background: #8b4513; color: white; border: none; padding: 8px 14px; cursor: pointer; margin-top: 8px; margin-right: 5px; border-radius: 4px; }
-    button:hover { background: #5f2f0c; }
-    .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; border: 1px solid #ccc; }
-    .day-header { font-weight: bold; text-align: center; background: #eee; padding: 8px; border: 1px solid #ddd; }
-    .day { min-height: 120px; border: 1px solid #ddd; padding: 6px; font-size: 12px; background: #fff; box-sizing: border-box; }
-    .other-month { background: #fafafa; color: #999; }
-    .past-day { background: #e8f5e9; }
-    .holiday-day { background: #fff9c4; border-color: #fbc02d; }
-    .other-month.past-day { background: #dff0e2; }
-    .other-month.holiday-day { background: #fff3b0; }
-    .today { outline: 3px solid #8b4513; }
-    .date-num { font-size: 18px; font-weight: bold; color: #333; }
-    .today-label { color: #8b4513; font-weight: bold; font-size: 10px; display: block; margin-top: 2px; }
-    .holiday { color: #9a1b00; font-weight: bold; font-size: 10px; display: block; margin-top: 2px; }
-    .legend { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 10px 0 0; font-size: 12px; color: #5f2f0c; }
-    .legend-item { display: inline-flex; align-items: center; gap: 5px; }
-    .legend-color { width: 16px; height: 16px; border: 1px solid #999; display: inline-block; border-radius: 3px; }
+    /* 🎨 WALLPAPER BACKGROUND: Langit ceria dengan lapisan elemen alam semulajadi */
+    body { 
+      font-family: 'Comic Sans MS', 'Chalkboard SE', Arial, sans-serif; 
+      background: linear-gradient(180deg, #b3e5fc 0%, #ffecb3 50%, #fdf5e6 100%); 
+      background-attachment: fixed;
+      padding: 40px 20px 160px 20px; /* Jarak bawah ditambah untuk ruang padang rumput */
+      margin: 0;
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    /* ☀️ MATAHARI KARTUN BERPUTAR */
+    .sun-decor {
+      position: fixed;
+      top: 30px;
+      left: 40px;
+      width: 70px;
+      height: 70px;
+      background: #ffaa00;
+      border: 4px solid #e65100;
+      border-radius: 50%;
+      z-index: -1;
+      box-shadow: 0 0 30px #ffcc00;
+      animation: spinSun 20s linear infinite;
+    }
+    .sun-decor::before {
+      content: "☀️";
+      font-size: 50px;
+      position: absolute;
+      top: 5px;
+      left: 6px;
+    }
+    @keyframes spinSun {
+      100% { transform: rotate(360deg); }
+    }
+
+    /* ☁️ AWAN TERAPUNG BERARAK */
+    body::before, body::after {
+      content: "";
+      position: fixed;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 50px;
+      z-index: -1;
+      animation: floatCloud 28s linear infinite;
+    }
+    body::before { width: 130px; height: 45px; top: 12%; left: -150px; box-shadow: 35px 12px 0 -5px white; }
+    body::after { width: 170px; height: 55px; top: 22%; left: -200px; animation-delay: 12s; box-shadow: -35px 12px 0 -5px white; }
+
+    @keyframes floatCloud {
+      0% { left: -200px; }
+      100% { left: 100vw; }
+    }
+
+    /* 🌳 POKOK KARTUN BERBUAH & BERGOYANG INTERAKTIF */
+    .tree-decor {
+      position: fixed;
+      bottom: 60px; /* Naik sikit dari dasar rumput */
+      width: 110px;
+      height: 160px;
+      z-index: -1;
+      transform-origin: bottom center;
+      animation: treeSway 4s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+    .tree-left { left: 3%; }
+    .tree-right { right: 3%; transform: scaleX(-1); animation-delay: 1.8s; }
+
+    .tree-trunk {
+      position: absolute;
+      bottom: 0;
+      left: 48px;
+      width: 14px;
+      height: 70px;
+      background: #5f2f0c;
+      border: 3px solid #3d1e08;
+      border-radius: 4px;
+    }
+    .tree-leaves {
+      position: absolute;
+      bottom: 60px;
+      left: 10px;
+      width: 90px;
+      height: 90px;
+      background: #2e7d32;
+      border: 4px solid #1b5e20;
+      border-radius: 50%;
+      box-shadow: inset -10px -10px 0 rgba(0,0,0,0.1);
+    }
+    /* Epal merah hiasan pada pokok */
+    .tree-leaves::after {
+      content: "🍎";
+      font-size: 14px;
+      position: absolute;
+      top: 25px;
+      left: 20px;
+      text-shadow: 30px 10px 0px red, 15px 30px 0px red;
+    }
+
+    @keyframes treeSway {
+      0% { transform: rotate(-3deg); }
+      100% { transform: rotate(4deg); }
+    }
+
+    /* 🍃 SISTEM PARTIKEL DAUN GUGUR SECARA RAWAK */
+    .leaf-particle {
+      position: fixed;
+      top: -20px;
+      color: #4caf50;
+      font-size: 18px;
+      z-index: -1;
+      user-select: none;
+      pointer-events: none;
+      animation: fallAnimation 10s linear infinite;
+    }
+    .leaf-particle:nth-child(1) { left: 15%; animation-duration: 8s; animation-delay: 1s; }
+    .leaf-particle:nth-child(2) { left: 45%; animation-duration: 11s; animation-delay: 3s; }
+    .leaf-particle:nth-child(3) { left: 80%; animation-duration: 9s; animation-delay: 0s; }
+    .leaf-particle:nth-child(4) { left: 90%; animation-duration: 12s; animation-delay: 5s; }
+
+    @keyframes fallAnimation {
+      0% { top: -20px; transform: translateX(0) rotate(0deg); opacity: 1; }
+      50% { transform: translateX(50px) rotate(180deg); }
+      100% { top: 100vh; transform: translateX(-30px) rotate(360deg); opacity: 0; }
+    }
+
+    /* 🌾 PADANG RUMPUT & BUNGA DI BAHAGIAN BAWAH SKRIN */
+    .grass-field {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100vw;
+      height: 70px;
+      background: #4caf50;
+      border-top: 5px solid #2e7d32;
+      z-index: -1;
+      box-shadow: inset 0 10px 10px rgba(0,0,0,0.05);
+    }
+    /* Hiasan bunga-bunga kartun berwarna-warni */
+    .grass-field::before {
+      content: "🌸 🌼 🌺 🌸 🌼 🌺 🌸 🌼 🌺";
+      font-size: 20px;
+      position: absolute;
+      top: -18px;
+      left: 5%;
+      letter-spacing: 80px;
+      white-space: nowrap;
+      opacity: 0.9;
+    }
+
+    /* 📦 KOTAK UTAMA SISTEM: Penuh mengikut struktur asal kod anda */
+    .calendar { 
+      width: 950px; 
+      margin: auto; 
+      background: white; 
+      border: 4px solid #8b4513; 
+      padding: 20px; 
+      border-radius: 16px;
+      box-shadow: 8px 8px 0px #5f2f0c; 
+      position: relative;
+      z-index: 2;
+    }
+    
+    .header { 
+      text-align: center; 
+      color: #8b4513; 
+      font-family: 'Arial Black', Gadget, sans-serif;
+      font-size: 36px; 
+      font-weight: 900; 
+      letter-spacing: 2px;
+      text-shadow: 3px 3px 0px #fff8dc, 5px 5px 0px #5f2f0c; 
+      margin-bottom: 4px; 
+    }
+    
+    .clock { text-align: center; color: #5f2f0c; font-size: 14px; font-weight: bold; margin-bottom: 20px; }
+    
+    .control-box { 
+      background: #fff8dc; 
+      border: 3px solid #8b4513; 
+      padding: 15px; 
+      margin-bottom: 25px; 
+      border-radius: 12px; 
+      box-shadow: 4px 4px 0px #8b4513;
+    }
+    
+    textarea { 
+      width: 100%; 
+      height: 180px; 
+      margin-top: 12px; 
+      padding: 12px; 
+      font-family: Consolas, monospace; 
+      font-size: 13px; 
+      box-sizing: border-box; 
+      border: 3px solid #8b4513; 
+      border-radius: 8px; 
+      background: #fff;
+      transition: all 0.2s ease;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #ff4500;
+      box-shadow: 4px 4px 0px #5f2f0c;
+    }
+    
+    button { 
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px; 
+      background: #8b4513; 
+      color: white; 
+      border: 3px solid #5f2f0c; 
+      padding: 10px 18px; 
+      cursor: pointer; 
+      margin-top: 8px; 
+      margin-right: 6px; 
+      border-radius: 10px; 
+      font-weight: 900;
+      font-size: 13px;
+      box-shadow: 4px 4px 0px #5f2f0c; 
+      transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.1s ease; 
+    }
+    
+    button:hover { 
+      background: #a0522d; 
+      transform: translate(-3px, -3px); 
+      box-shadow: 7px 7px 0px #5f2f0c; 
+    }
+    
+    button:active {
+      transform: translate(3px, 3px); 
+      box-shadow: 1px 1px 0px #5f2f0c;
+    }
+
+    button svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 3; 
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+
+    button:hover .left-icon { transform: translateX(-4px); }
+    button:hover .right-icon { transform: translateX(4px); }
+    button:hover .spin-icon { transform: rotate(180deg); }
+    button:hover .bounce-icon { animation: cartoonBounce 0.4s infinite alternate; }
+
+    @keyframes cartoonBounce {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-4px); }
+    }
+
+    .grid { 
+      display: grid; 
+      grid-template-columns: repeat(7, 1fr); 
+      gap: 6px; 
+      background: #8b4513; 
+      border: 3px solid #8b4513; 
+      border-radius: 12px;
+      padding: 4px;
+    }
+    
+    .day-header { 
+      font-weight: 900; 
+      text-align: center; 
+      background: #fff8dc; 
+      color: #8b4513;
+      padding: 10px; 
+      border: 2px solid #8b4513;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    
+    .day { 
+      min-height: 125px; 
+      padding: 8px; 
+      font-size: 12px; 
+      background: #fff; 
+      box-sizing: border-box; 
+      border: 2px solid #8b4513;
+      border-radius: 8px;
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease, z-index 0s;
+      position: relative;
+    }
+    
+    .day:hover {
+      transform: scale(1.06) rotate(1.5deg); 
+      box-shadow: 5px 5px 0px #5f2f0c;
+      z-index: 10;
+      background: #fffdf0;
+    }
+    
+    .day:nth-child(even):hover {
+      transform: scale(1.06) rotate(-1.5deg);
+    }
+    
+    .other-month { background: #f5f5f5; color: #bbb; opacity: 0.6; }
+    .past-day { background: #e8f5e9; } 
+    .holiday-day { background: #fff9c4; border-color: #fbc02d; } 
+    .other-month.past-day { background: #f0f7f1; }
+    .other-month.holiday-day { background: #fffde7; }
+    
+    .today { 
+      border: 3px solid #ff4500;
+      background: #fff5ee;
+      box-shadow: 3px 3px 0px #ff4500;
+    }
+    
+    .date-num { font-size: 18px; font-weight: 900; color: #333; }
+    
+    .today-label { 
+      background: #ff4500;
+      color: white;
+      font-weight: bold; 
+      font-size: 9px; 
+      display: inline-block; 
+      padding: 2px 6px;
+      border-radius: 20px;
+      margin-top: 2px;
+      border: 1px solid #5f2f0c;
+    }
+    
+    .holiday { 
+      color: #9a1b00; 
+      font-weight: bold; 
+      font-size: 10px; 
+      display: block; 
+      margin-top: 4px;
+      background: #ffebee;
+      padding: 2px 4px;
+      border-radius: 4px;
+      border: 1px dashed #9a1b00;
+    }
+    
+    .legend { display: flex; gap: 15px; flex-wrap: wrap; align-items: center; margin: 10px 0 20px 0; font-size: 13px; font-weight: bold; color: #5f2f0c; }
+    .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+    .legend-color { width: 18px; height: 18px; border: 2px solid #8b4513; display: inline-block; border-radius: 4px; }
     .legend-past { background: #e8f5e9; }
-    .legend-holiday { background: #fff9c4; border-color: #fbc02d; }
-    .task { background: #e1f5fe; border-left: 4px solid #03a9f4; padding: 5px; font-size: 11px; margin-top: 6px; line-height: 1.45; border-radius: 4px; }
-    .message { display: none; background: #e8f5e9; border: 1px solid #4caf50; color: #256029; padding: 10px; margin-top: 10px; border-radius: 5px; font-weight: bold; }
+    .legend-holiday { background: #fff9c4; }
+    
+    .task { 
+      background: #fffacd; 
+      border: 2px solid #8b4513; 
+      padding: 6px; 
+      font-size: 11px; 
+      margin-top: 8px; 
+      line-height: 1.5; 
+      border-radius: 6px; 
+      color: #333; 
+      box-shadow: 2px 2px 0px #8b4513;
+    }
+    .task strong { color: #8b4513; font-size: 12px; display: block; margin-bottom: 2px; }
+    
+    .message { display: none; background: #e8f5e9; border: 2px solid #4caf50; color: #256029; padding: 10px; margin-top: 10px; border-radius: 8px; font-weight: bold; box-shadow: 2px 2px 0px #4caf50; }
   </style>
 </head>
 <body>
 
+<div class="sun-decor"></div>
+
+<div class="leaf-particle">🍃</div>
+<div class="leaf-particle">🍂</div>
+<div class="leaf-particle">🍃</div>
+<div class="leaf-particle">🍂</div>
+
+<div class="tree-decor tree-left">
+  <div class="tree-trunk"></div>
+  <div class="tree-leaves"></div>
+</div>
+<div class="tree-decor tree-right">
+  <div class="tree-trunk"></div>
+  <div class="tree-leaves"></div>
+</div>
+
+<div class="grass-field"></div>
+
 <div class="calendar">
   <div class="header" id="calendarHeader">NEWSLETTER SCHEDULE</div>
   <div class="clock" id="clock"></div>
+  
   <div class="legend">
     <span class="legend-item"><span class="legend-color legend-past"></span> Hari sudah lepas</span>
     <span class="legend-item"><span class="legend-color legend-holiday"></span> Cuti umum Malaysia 2026</span>
   </div>
 
   <div class="control-box">
-    <button onclick="goToPreviousMonth()">Bulan Sebelum</button>
-    <button onclick="goToCurrentMonth()">Sync Bulan Semasa</button>
-    <button onclick="goToNextMonth()">Bulan Seterusnya</button>
+    <button onclick="goToPreviousMonth()">
+      <svg class="left-icon" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      Bulan Sebelum
+    </button>
+    
+    <button onclick="goToCurrentMonth()">
+      <svg class="spin-icon" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+      Sync Bulan Semasa
+    </button>
+    
+    <button onclick="goToNextMonth()">
+      Bulan Seterusnya
+      <svg class="right-icon" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+    </button>
+    
     <br>
     <textarea id="scheduleText" placeholder="Contoh:
 Week 24 (11 Jun 2026)
@@ -55,9 +416,22 @@ PDF: Nama staff
 JE Task: Nama staff
 Pic: Nama staff"></textarea>
     <br>
-    <button onclick="updateCalendar()">Update Calendar</button>
-    <button onclick="saveToServer()">Save ke Server</button>
-    <button onclick="downloadTxt()">Download TXT</button>
+    
+    <button onclick="updateCalendar()">
+      <svg class="spin-icon" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+      Update Calendar
+    </button>
+    
+    <button onclick="saveToServer()">
+      <svg class="bounce-icon" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+      Save ke Server
+    </button>
+    
+    <button onclick="downloadTxt()">
+      <svg class="bounce-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      Download TXT
+    </button>
+    
     <div id="message" class="message"></div>
   </div>
 
@@ -65,6 +439,7 @@ Pic: Nama staff"></textarea>
 </div>
 
 <script>
+  // Logik JavaScript asal kekal 100% tanpa sebarang pengubahan nama fungsi/variable
   const textarea = document.getElementById("scheduleText");
   const calendarGrid = document.getElementById("calendarGrid");
   const calendarHeader = document.getElementById("calendarHeader");
@@ -76,59 +451,25 @@ Pic: Nama staff"></textarea>
   ];
   const dayNames = ["Ahad", "Isnin", "Selasa", "Rabu", "Khamis", "Jumaat", "Sabtu"];
 
-  // Cuti umum Malaysia 2026. Termasuk cuti persekutuan dan cuti negeri yang tersenarai untuk Malaysia.
-  // Format: "YYYY-MM-DD": ["Nama Cuti"]
   const holidays = {
-    "2026-01-01": ["New Year's Day"],
-    "2026-01-14": ["YDPB Negeri Sembilan's Birthday"],
-    "2026-01-17": ["Israk and Mikraj"],
-    "2026-02-01": ["Thaipusam", "Federal Territory Day"],
-    "2026-02-02": ["Thaipusam Holiday", "Federal Territory Day Holiday"],
-    "2026-02-03": ["Federal Territory Day Holiday"],
-    "2026-02-17": ["Chinese New Year"],
-    "2026-02-18": ["Chinese New Year Day 2"],
-    "2026-02-19": ["Awal Ramadan"],
-    "2026-02-20": ["Independence Declaration Day"],
-    "2026-03-04": ["Installation of Sultan Terengganu"],
-    "2026-03-07": ["Nuzul Al-Quran"],
-    "2026-03-21": ["Hari Raya Aidilfitri"],
-    "2026-03-22": ["Hari Raya Aidilfitri Day 2"],
-    "2026-03-23": ["Hari Raya Aidilfitri Holiday", "Sultan of Johor's Birthday"],
-    "2026-03-24": ["Hari Raya Aidilfitri Holiday"],
-    "2026-03-30": ["Sabah Governor's Birthday"],
-    "2026-04-03": ["Good Friday"],
-    "2026-04-26": ["Sultan of Terengganu's Birthday"],
-    "2026-05-01": ["Labour Day"],
-    "2026-05-17": ["Raja Perlis' Birthday"],
-    "2026-05-18": ["Raja Perlis' Birthday Holiday"],
-    "2026-05-22": ["Hari Hol Pahang"],
-    "2026-05-26": ["Arafat Day"],
-    "2026-05-27": ["Hari Raya Haji"],
-    "2026-05-28": ["Hari Raya Haji Day 2"],
-    "2026-05-30": ["Harvest Festival"],
-    "2026-05-31": ["Harvest Festival Day 2", "Wesak Day"],
-    "2026-06-01": ["Wesak Day Holiday", "Hari Gawai", "Agong's Birthday", "Harvest Festival Holiday"],
-    "2026-06-02": ["Hari Gawai Holiday"],
-    "2026-06-17": ["Awal Muharram"],
-    "2026-06-21": ["Sultan of Kedah's Birthday"],
-    "2026-07-07": ["Georgetown World Heritage City Day"],
-    "2026-07-11": ["Penang Governor's Birthday"],
-    "2026-07-21": ["Hari Hol Almarhum Sultan Iskandar"],
-    "2026-07-22": ["Sarawak Day"],
-    "2026-07-30": ["Sultan of Pahang's Birthday"],
-    "2026-08-24": ["Melaka Governor's Birthday"],
-    "2026-08-25": ["Prophet Muhammad's Birthday"],
-    "2026-08-31": ["Merdeka Day"],
-    "2026-09-16": ["Malaysia Day"],
-    "2026-09-29": ["Sultan of Kelantan's Birthday"],
-    "2026-09-30": ["Sultan of Kelantan's Birthday Day 2"],
-    "2026-10-10": ["Sarawak Governor's Birthday"],
-    "2026-11-06": ["Sultan of Perak's Birthday"],
-    "2026-11-08": ["Deepavali"],
-    "2026-11-09": ["Deepavali Holiday"],
-    "2026-12-11": ["Sultan of Selangor's Birthday"],
-    "2026-12-24": ["Christmas Eve"],
-    "2026-12-25": ["Christmas Day"]
+    "2026-01-01": ["New Year's Day"], "2026-01-14": ["YDPB Negeri Sembilan's Birthday"], "2026-01-17": ["Israk and Mikraj"],
+    "2026-02-01": ["Thaipusam", "Federal Territory Day"], "2026-02-02": ["Thaipusam Holiday", "Federal Territory Day Holiday"],
+    "2026-02-03": ["Federal Territory Day Holiday"], "2026-02-17": ["Chinese New Year"], "2026-02-18": ["Chinese New Year Day 2"],
+    "2026-02-19": ["Awal Ramadan"], "2026-02-20": ["Independence Declaration Day"], "2026-03-04": ["Installation of Sultan Terengganu"],
+    "2026-03-07": ["Nuzul Al-Quran"], "2026-03-21": ["Hari Raya Aidilfitri"], "2026-03-22": ["Hari Raya Aidilfitri Day 2"],
+    "2026-03-23": ["Hari Raya Aidilfitri Holiday", "Sultan of Johor's Birthday"], "2026-03-24": ["Hari Raya Aidilfitri Holiday"],
+    "2026-03-30": ["Sabah Governor's Birthday"], "2026-04-03": ["Good Friday"], "2026-04-26": ["Sultan of Terengganu's Birthday"],
+    "2026-05-01": ["Labour Day"], "2026-05-17": ["Raja Perlis' Birthday"], "2026-05-18": ["Raja Perlis' Birthday Holiday"],
+    "2026-05-22": ["Hari Hol Pahang"], "2026-05-26": ["Arafat Day"], "2026-05-27": ["Hari Raya Haji"],
+    "2026-05-28": ["Hari Raya Haji Day 2"], "2026-05-30": ["Harvest Festival"], "2026-05-31": ["Harvest Festival Day 2", "Wesak Day"],
+    "2026-06-01": ["Wesak Day Holiday", "Hari Gawai", "Agong's Birthday", "Harvest Festival Holiday"], "2026-06-02": ["Hari Gawai Holiday"],
+    "2026-06-17": ["Awal Muharram"], "2026-06-21": ["Sultan of Kedah's Birthday"], "2026-07-07": ["Georgetown World Heritage City Day"],
+    "2026-07-11": ["Penang Governor's Birthday"], "2026-07-21": ["Hari Hol Almarhum Sultan Iskandar"], "2026-07-22": ["Sarawak Day"],
+    "2026-07-30": ["Sultan of Pahang's Birthday"], "2026-08-24": ["Melaka Governor's Birthday"], "2026-08-25": ["Prophet Muhammad's Birthday"],
+    "2026-08-31": ["Merdeka Day"], "2026-09-16": ["Malaysia Day"], "2026-09-29": ["Sultan of Kelantan's Birthday"],
+    "2026-09-30": ["Sultan of Kelantan's Birthday Day 2"], "2026-10-10": ["Sarawak Governor's Birthday"], "2026-11-06": ["Sultan of Perak's Birthday"],
+    "2026-11-08": ["Deepavali"], "2026-11-09": ["Deepavali Holiday"], "2026-12-11": ["Sultan of Selangor's Birthday"],
+    "2026-12-24": ["Christmas Eve"], "2026-12-25": ["Christmas Day"]
   };
 
   let viewedDate = new Date();
@@ -137,99 +478,56 @@ Pic: Nama staff"></textarea>
     loadSchedule();
     updateClock();
     setInterval(updateClock, 1000);
-
-    // Auto re-render bila text schedule berubah
     textarea.addEventListener("input", updateCalendar);
   };
 
   function loadSchedule() {
     fetch('/get_schedule')
-      .then(r => {
-        if (!r.ok) throw new Error("Server tidak tersedia");
-        return r.text();
-      })
-      .then(data => {
-        textarea.value = data;
-        updateCalendar();
-      })
-      .catch(() => {
-        textarea.value = localStorage.getItem("newsletterSchedule") || "";
-        updateCalendar();
-      });
+      .then(r => { if (!r.ok) throw new Error(); return r.text(); })
+      .then(data => { textarea.value = data; updateCalendar(); })
+      .catch(() => { textarea.value = localStorage.getItem("newsletterSchedule") || ""; updateCalendar(); });
   }
 
   function saveToServer() {
     localStorage.setItem("newsletterSchedule", textarea.value);
-
     fetch('/save_schedule', { method: 'POST', body: textarea.value })
-      .then(r => {
-        if (!r.ok) throw new Error("Server tidak tersedia");
-        showMessage("Data berjaya disimpan di server dan browser!");
-      })
-      .catch(() => {
-        showMessage("Server tidak tersedia. Data disimpan sementara di browser sahaja.");
-      });
+      .then(r => { if (!r.ok) throw new Error(); showMessage("Data berjaya disimpan di server!"); })
+      .catch(() => { showMessage("Simpan sementara di browser."); });
   }
 
   function downloadTxt() {
     const blob = new Blob([textarea.value], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = "schedule.txt";
-    a.click();
-    URL.revokeObjectURL(url);
+    a.href = url; a.download = "schedule.txt"; a.click(); URL.revokeObjectURL(url);
   }
 
   function showMessage(text) {
     const msg = document.getElementById("message");
-    msg.innerText = text;
-    msg.style.display = "block";
+    msg.innerText = text; msg.style.display = "block";
     setTimeout(() => msg.style.display = "none", 3000);
   }
 
   function updateClock() {
     const now = new Date();
     clock.innerText = "Sync masa semasa: " + now.toLocaleString("ms-MY", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
+      weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit"
     });
   }
 
-  function goToPreviousMonth() {
-    viewedDate = new Date(viewedDate.getFullYear(), viewedDate.getMonth() - 1, 1);
-    updateCalendar();
-  }
-
-  function goToCurrentMonth() {
-    viewedDate = new Date();
-    updateCalendar();
-  }
-
-  function goToNextMonth() {
-    viewedDate = new Date(viewedDate.getFullYear(), viewedDate.getMonth() + 1, 1);
-    updateCalendar();
-  }
+  function goToPreviousMonth() { viewedDate = new Date(viewedDate.getFullYear(), viewedDate.getMonth() - 1, 1); updateCalendar(); }
+  function goToCurrentMonth() { viewedDate = new Date(); updateCalendar(); }
+  function goToNextMonth() { viewedDate = new Date(viewedDate.getFullYear(), viewedDate.getMonth() + 1, 1); updateCalendar(); }
 
   function parseSchedule(text) {
     const weeks = {};
     const regex = /week\s+(\d+)\s*\((.*?)\)(.*?)(?=week\s+\d+\s*\(|$)/gis;
     let match;
-
     while ((match = regex.exec(text)) !== null) {
       weeks[match[1].trim()] = {
-        html: getValue(match[3], "HTML"),
-        pdf: getValue(match[3], "PDF"),
-        je: getValue(match[3], "JE Task"),
-        pic: getValue(match[3], "Pic")
+        html: getValue(match[3], "HTML"), pdf: getValue(match[3], "PDF"), je: getValue(match[3], "JE Task"), pic: getValue(match[3], "Pic")
       };
     }
-
     return weeks;
   }
 
@@ -255,12 +553,11 @@ Pic: Nama staff"></textarea>
     });
 
     const firstDay = new Date(year, month, 1);
-    const startOffset = firstDay.getDay(); // 0 = Ahad
+    const startOffset = firstDay.getDay();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayKey = formatDateKey(today);
 
-    // 42 petak = 6 minggu, supaya newsletter week yang overlap bulan depan masih nampak
     for (let i = 0; i < 42; i++) {
       const date = new Date(year, month, 1 - startOffset + i);
       const dateKey = formatDateKey(date);
@@ -275,23 +572,16 @@ Pic: Nama staff"></textarea>
       if (dateKey === todayKey) dayBox.classList.add("today");
 
       let html = `<span class="date-num">${date.getDate()}</span>`;
-
-      if (dateKey === todayKey) {
-        html += `<span class="today-label">Hari ini</span>`;
-      }
+      if (dateKey === todayKey) html += `<span class="today-label">Hari ini</span>`;
 
       if (holidays[dateKey]) {
-        html += holidays[dateKey]
-          .map(name => `<span class="holiday">${escapeHTML(name)}</span>`)
-          .join("");
+        html += holidays[dateKey].map(name => `<span class="holiday">${escapeHTML(name)}</span>`).join("");
       }
 
-      // Schedule ditunjukkan pada hari Khamis mengikut ISO week number.
-      // Contoh: Week 24 akan masuk pada Khamis minggu ISO ke-24.
       if (date.getDay() === 4 && schedules[weekNo]) {
         html += `
           <div class="task">
-            <strong>Week ${weekNo}</strong><br>
+            <strong>Week ${weekNo}</strong>
             HTML: ${escapeHTML(schedules[weekNo].html)}<br>
             PDF: ${escapeHTML(schedules[weekNo].pdf)}<br>
             JE: ${escapeHTML(schedules[weekNo].je)}<br>
@@ -306,10 +596,7 @@ Pic: Nama staff"></textarea>
   }
 
   function formatDateKey(date) {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
   }
 
   function getISOWeek(date) {
@@ -321,12 +608,7 @@ Pic: Nama staff"></textarea>
   }
 
   function escapeHTML(value) {
-    return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+    return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
   }
 </script>
 </body>
